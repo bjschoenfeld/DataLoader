@@ -10,9 +10,11 @@ extension Channel {
 
             for waiters in await state.waiters {
                 waiters.resume(returning: value)
+                print("\(#line): resumed waited checked continuation")
             }
 
             await state.removeAllWaiters()
+            print("\(#line): removed all waited checked continuations")
 
             return false
         }
@@ -27,9 +29,11 @@ extension Channel {
 
             for waiters in await state.waiters {
                 waiters.resume(throwing: failure)
+                print("\(#line): resumed waited checked continuation")
             }
 
             await state.removeAllWaiters()
+            print("\(#line): removed all waited checked continuations")
 
             return false
         }
@@ -40,13 +44,17 @@ extension Channel {
     var value: Success {
         get async throws {
             try await withCheckedThrowingContinuation { continuation in
+                print("\(#line): created checked continuation")
                 Task {
                     if let result = await state.result {
                         continuation.resume(returning: result)
+                        print("\(#line): resumed checked continuation")
                     } else if let failure = await self.state.failure {
                         continuation.resume(throwing: failure)
+                        print("\(#line): resumed checked continuation")
                     } else {
                         await state.appendWaiters(waiters: continuation)
+                        print("\(#line): appended checked continuation")
                     }
                 }
             }
