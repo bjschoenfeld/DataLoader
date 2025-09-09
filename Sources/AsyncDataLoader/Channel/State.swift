@@ -4,6 +4,12 @@ actor State<Success, Failure> {
     var waiters = [Waiter<Success, Failure>]()
     var result: Success?
     var failure: Failure?
+
+    deinit {
+        if waiters.count > 0 {
+            fatalError("found waiter that was not removed and possibly not resumed")
+        }
+    }
 }
 
 extension State {
