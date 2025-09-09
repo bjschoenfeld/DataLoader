@@ -19,6 +19,8 @@ extension Channel {
             return false
         }
 
+        print("exiting fulfill with \(await state.waiters.count) continuations not resumed or removed")
+
         return true
     }
 
@@ -37,6 +39,8 @@ extension Channel {
 
             return false
         }
+
+        print("exiting fail with \(await state.waiters.count) continuations not resumed or removed")
 
         return true
     }
