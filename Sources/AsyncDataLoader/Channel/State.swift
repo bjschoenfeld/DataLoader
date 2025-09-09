@@ -6,7 +6,9 @@ actor State<Success, Failure> {
     var failure: Failure?
 
     deinit {
-        if waiters.count > 0 {
+        let waiterCount = waiters.count
+        print("deinit state with waiter count: \(waiterCount)")
+        if waiterCount > 0 {
             fatalError("found waiter that was not removed and possibly not resumed")
         }
     }
