@@ -34,6 +34,7 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
         options: DataLoaderOptions<Key, Value> = DataLoaderOptions(),
         batchLoadFunction: @escaping BatchLoadFunction<Key, Value>
     ) {
+        print(options)
         self.options = options
         self.batchLoadFunction = batchLoadFunction
     }
@@ -43,28 +44,37 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
         let cacheKey = options.cacheKeyFunction?(key) ?? key
 
         if options.cachingEnabled, let cached = cache[cacheKey] {
+            print("returning cached value")
             return try await cached.valueLeaker
         }
 
         let channel = Channel<Value, Error>()
 
         if options.batchingEnabled {
+            print("batching enabled, entered if block")
             queue.append((key: key, channel: channel))
 
             if let executionPeriod = options.executionPeriod, !dispatchScheduled {
+                print("created detached Task for batched execution")
                 Task.detached {
                     try await Task.sleep(nanoseconds: executionPeriod)
+                    print("starting execute")
                     try await self.execute()
+                    print("finished execute")
                 }
 
                 dispatchScheduled = true
             }
+            print("exiting batching enabled block")
         } else {
+            print("batching not enabled, entered else block, creating detached task")
             Task.detached {
                 do {
                     let results = try await self.batchLoadFunction([key])
+                    print("loaded results")
 
                     if results.isEmpty {
+                        print("results empty")
                         await channel
                             .fail(
                                 DataLoaderError
@@ -75,12 +85,15 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
 
                         switch result {
                         case let .success(value):
+                            print("result success")
                             await channel.fulfill(value)
                         case let .failure(error):
+                            print("result failure")
                             await channel.fail(error)
                         }
                     }
                 } catch {
+                    print("loading error: \(error)")
                     await channel.fail(error)
                 }
             }
@@ -88,8 +101,10 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
 
         if options.cachingEnabled {
             cache[cacheKey] = channel
+            print("added channel to cache")
         }
 
+        print("returning value")
         return try await channel.valueLeaker
     }
 
