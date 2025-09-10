@@ -10,11 +10,10 @@ extension Channel {
 
             for waiters in await state.waiters {
                 waiters.resume(returning: value)
-                print("\(#line): resumed waited checked continuation")
+                print("\(#line): resumed checked continuation (waited)")
             }
 
             await state.removeAllWaiters()
-            print("\(#line): removed all waited checked continuations")
 
             return false
         }
@@ -31,11 +30,10 @@ extension Channel {
 
             for waiters in await state.waiters {
                 waiters.resume(throwing: failure)
-                print("\(#line): resumed waited checked continuation")
+                print("\(#line): resumed checked continuation (waited)")
             }
 
             await state.removeAllWaiters()
-            print("\(#line): removed all waited checked continuations")
 
             return false
         }

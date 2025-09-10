@@ -7,9 +7,8 @@ actor State<Success, Failure> {
 
     deinit {
         let waiterCount = waiters.count
-        print("deinit state with waiter count: \(waiterCount)")
         if waiterCount > 0 {
-            fatalError("found waiter that was not removed and possibly not resumed")
+            fatalError("found \(waiterCount) waiter(s) that were not removed and possibly not resumed")
         }
     }
 }
@@ -28,6 +27,9 @@ extension State {
     }
 
     func removeAllWaiters() {
-        waiters.removeAll()
+        while !waiters.isEmpty {
+            waiters.removeLast()
+            print("removed checked continuation")
+        }
     }
 }
