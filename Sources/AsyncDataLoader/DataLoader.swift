@@ -43,7 +43,7 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
         let cacheKey = options.cacheKeyFunction?(key) ?? key
 
         if options.cachingEnabled, let cached = cache[cacheKey] {
-            return try await cached.value
+            return try await cached.valueLeaker
         }
 
         let channel = Channel<Value, Error>()
@@ -90,7 +90,7 @@ public actor DataLoader<Key: Hashable & Sendable, Value: Sendable> {
             cache[cacheKey] = channel
         }
 
-        return try await channel.value
+        return try await channel.valueLeaker
     }
 
     /// Loads multiple keys, promising an array of values:

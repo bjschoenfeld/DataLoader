@@ -43,7 +43,7 @@ extension Channel {
         return true
     }
 
-    var value: Success {
+    var valueLeaker: Success {
         get async throws {
             try await withCheckedThrowingContinuation { continuation in
                 print("\(#line): created checked continuation")
